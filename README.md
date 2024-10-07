@@ -69,9 +69,15 @@ Current installation options:
 2) Customize installation
 3) Cancel installation
 ```
-
+source ./bashrc
 rust-lang.rust-analyzer-0.3.2129-linux-x64
 sudo yum install gcc
+
+```
+cargo new hello_cargo
+cd hello_cargo
+cargo run
+```
 
 ```
 wget 'https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64' -O vscode_cli.tar.gz
