@@ -48,6 +48,18 @@ COPY settings.json "${VSCODE_SERVER_DATA_DIR}/data/Machine/"
 
 # ----------------------------------------------------------------------------------------------------
 
+# Rust のインストール
+ENV CARGO_HOME=/usr/local/cargo \
+    RUSTUP_HOME=/usr/local/rustup
+RUN dnf install -y \
+        gcc \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# export PATH="/usr/local/cargo/bin:$PATH"
+# export PATH="/usr/local/rustup:$PATH"
+# rustup default stable　※このままだとユーザーフォルダ内にインストールされてしまう /home/user/.rustup
+# cargo new hello_cargo
+
 # # .NET SDK のインストール ※要 libicu
 # ARG DOTNET_VERSION \
 #     DOTNET_INSTALL_DIR="/usr/local/share/dotnet"
