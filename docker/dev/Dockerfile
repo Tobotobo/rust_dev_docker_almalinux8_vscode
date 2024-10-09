@@ -49,11 +49,15 @@ COPY settings.json "${VSCODE_SERVER_DATA_DIR}/data/Machine/"
 # ----------------------------------------------------------------------------------------------------
 
 # Rust のインストール
-ENV CARGO_HOME=/usr/local/cargo \
+ARG CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup
 RUN dnf install -y \
-        gcc \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        gcc
+RUN export CARGO_HOME=${CARGO_HOME} \
+    && export RUSTUP_HOME=${RUSTUP_HOME} \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+RUN export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}:\$PATH" \
+    rustup default stable
 
 # export PATH="/usr/local/cargo/bin:$PATH"
 # export PATH="/usr/local/rustup:$PATH"
@@ -75,6 +79,10 @@ RUN dnf install -y \
 # # C# の拡張機能をインストール
 # RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" ms-dotnettools csharp 2.45.25 linux-x64
 # RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" ms-dotnettools vscode-dotnet-runtime 2.1.7
+
+RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" rust-lang rust-analyzer 0.3.2129 linux-x64
+
+RUN echo "export PATH=\$PATH:${CARGO_HOME}/bin:${RUSTUP_HOME}" > /etc/profile.d/rust_path.sh
 
 # ----------------------------------------------------------------------------------------------------
 
