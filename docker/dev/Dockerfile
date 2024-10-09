@@ -82,7 +82,9 @@ RUN export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}:\$PATH" \
 
 RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" rust-lang rust-analyzer 0.3.2129 linux-x64
 
-RUN echo "export PATH=\$PATH:${CARGO_HOME}/bin:${RUSTUP_HOME}" > /etc/profile.d/rust_path.sh
+RUN echo "export PATH=\$PATH:${CARGO_HOME}/bin:${RUSTUP_HOME}" > /etc/profile.d/rust_path.sh \
+    && echo "export CARGO_HOME=${CARGO_HOME}/bin:${RUSTUP_HOME}" >> /etc/profile.d/rust_path.sh \
+    && echo "export RUSTUP_HOME=${RUSTUP_HOME}" >> /etc/profile.d/rust_path.sh
 
 # ----------------------------------------------------------------------------------------------------
 
