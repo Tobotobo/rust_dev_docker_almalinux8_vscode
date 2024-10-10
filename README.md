@@ -4,6 +4,22 @@
 * VSCode 内蔵するぞ
 * rust 版
 
+Tauri  
+https://v2.tauri.app/start/  
+
+```
+cargo install create-tauri-app --locked
+cargo create-tauri-app
+```
+
+```
+warning: be sure to add `/opt/dev-tools/cargo/bin:/opt/dev-tools/rustup/bin` to your PATH to be able to run the installed binaries
+```
+
+```
+ssh user@192.168.56.10 -p2222 -L 8000:127.0.0.1:8000 -L 5000:127.0.0.1:5000
+```
+
 ```
 docker compose exec dev bash
 ```

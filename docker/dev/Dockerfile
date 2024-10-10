@@ -26,16 +26,20 @@ ENV LANG="ja_JP.UTF-8" \
     LC_ALL="ja_JP.UTF-8" \
     TZ="Asia/Tokyo"
 
+# 諸々の開発ツールのインストール先
+ARG DEV_TOOLS_DIR="/opt/dev-tools"
+
 # VSCode CLI をインストール
 ARG VSCODE_VERSION="stable" \
-    VSCODE_INSTALL_DIR="/usr/local/bin" \
-    VSCODE_DATA_ROOT_DIR="/vscode"
-ARG VSCODE_SERVER_DATA_DIR="${VSCODE_DATA_ROOT_DIR}/server-data" \
-    VSCODE_USER_DATA_DIR="${VSCODE_DATA_ROOT_DIR}/user-data" \
-    VSCODE_EXTENSIONS_DIR="${VSCODE_DATA_ROOT_DIR}/extensions" \
-    VSCODE_CLI_DATA_DIR="${VSCODE_DATA_ROOT_DIR}/cli-data"
+    VSCODE_HOME="${DEV_TOOLS_DIR}/vscode"
+ARG VSCODE_INSTALL_DIR="${VSCODE_HOME}/bin" \
+    VSCODE_SERVER_DATA_DIR="${VSCODE_HOME}/server-data" \
+    VSCODE_USER_DATA_DIR="${VSCODE_HOME}/user-data" \
+    VSCODE_EXTENSIONS_DIR="${VSCODE_HOME}/extensions" \
+    VSCODE_CLI_DATA_DIR="${VSCODE_HOME}/cli-data"
 COPY vscode_install_extension.sh /
-RUN mkdir -p "${VSCODE_SERVER_DATA_DIR}" \
+RUN mkdir -p "${VSCODE_INSTALL_DIR}" \
+    && mkdir -p "${VSCODE_SERVER_DATA_DIR}" \
     && mkdir -p "${VSCODE_USER_DATA_DIR}" \
     && mkdir -p "${VSCODE_EXTENSIONS_DIR}" \
     && mkdir -p "${VSCODE_CLI_DATA_DIR}" \
@@ -43,14 +47,15 @@ RUN mkdir -p "${VSCODE_SERVER_DATA_DIR}" \
     && tar -xf /tmp/vscode_cli.tar.gz -C /tmp \
     && mv /tmp/code "${VSCODE_INSTALL_DIR}" \
     && rm /tmp/vscode_cli.tar.gz \
-    && chmod +x /vscode_install_extension.sh
+    && chmod +x /vscode_install_extension.sh \
+    && echo "export PATH=\$PATH:${VSCODE_INSTALL_DIR}" > /etc/profile.d/vscode_path.sh
 COPY settings.json "${VSCODE_SERVER_DATA_DIR}/data/Machine/"
 
 # ----------------------------------------------------------------------------------------------------
 
 # Rust のインストール
-ARG CARGO_HOME=/usr/local/cargo \
-    RUSTUP_HOME=/usr/local/rustup
+ARG CARGO_HOME="${DEV_TOOLS_DIR}/cargo" \
+    RUSTUP_HOME="${DEV_TOOLS_DIR}/rustup"
 RUN dnf install -y \
         gcc \
     && export CARGO_HOME=${CARGO_HOME} \
@@ -86,8 +91,9 @@ RUN groupadd --gid ${USER_GID} ${USER_NAME} \
     && chmod 0440 /etc/sudoers.d/${USER_NAME} \
     && echo "${USER_NAME}:${USER_PASSWORD}" | chpasswd
 
-# VSCode のデータの保存先にアクセス許可を設定 ※TODO: どう設定するのが適切？
-RUN chmod -R 777 "${VSCODE_DATA_ROOT_DIR}"
+# 追加したユーザーを諸々の開発ツールのインストール先のオーナーに設定
+RUN chown -R ${USER_UID}:${USER_GID} "${DEV_TOOLS_DIR}" \
+    && chmod -R 775 "${DEV_TOOLS_DIR}"
 
 # Entrypoint
 COPY entrypoint.d /entrypoint.d
@@ -97,6 +103,7 @@ RUN chmod +x /entrypoint.sh \
 
 # Supervisor
 ENV VSCODE_USER="${USER_NAME}" \
+    VSCODE_INSTALL_DIR="${VSCODE_INSTALL_DIR}" \
     VSCODE_SERVER_DATA_DIR="${VSCODE_SERVER_DATA_DIR}" \
     VSCODE_USER_DATA_DIR="${VSCODE_USER_DATA_DIR}" \
     VSCODE_EXTENSIONS_DIR="${VSCODE_EXTENSIONS_DIR}" \
