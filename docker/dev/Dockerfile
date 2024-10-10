@@ -52,39 +52,20 @@ COPY settings.json "${VSCODE_SERVER_DATA_DIR}/data/Machine/"
 ARG CARGO_HOME=/usr/local/cargo \
     RUSTUP_HOME=/usr/local/rustup
 RUN dnf install -y \
-        gcc
-RUN export CARGO_HOME=${CARGO_HOME} \
+        gcc \
+    && export CARGO_HOME=${CARGO_HOME} \
     && export RUSTUP_HOME=${RUSTUP_HOME} \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-RUN export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}:\$PATH" \
-    rustup default stable
-
-# export PATH="/usr/local/cargo/bin:$PATH"
-# export PATH="/usr/local/rustup:$PATH"
-# rustup default stable　※このままだとユーザーフォルダ内にインストールされてしまう /home/user/.rustup
-# cargo new hello_cargo
-
-# # .NET SDK のインストール ※要 libicu
-# ARG DOTNET_VERSION \
-#     DOTNET_INSTALL_DIR="/usr/local/share/dotnet"
-# RUN dnf install -y \
-#         libicu \ 
-#     && wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh \
-#     && chmod +x ./dotnet-install.sh \
-#     && mkdir -p "${DOTNET_INSTALL_DIR}" \
-#     && ./dotnet-install.sh --version ${DOTNET_VERSION} --install-dir "${DOTNET_INSTALL_DIR}" \
-#     && rm ./dotnet-install.sh \
-#     && echo "export PATH=\$PATH:${DOTNET_INSTALL_DIR}" > /etc/profile.d/dotnet_path.sh
-
-# # C# の拡張機能をインストール
-# RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" ms-dotnettools csharp 2.45.25 linux-x64
-# RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" ms-dotnettools vscode-dotnet-runtime 2.1.7
-
-RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" rust-lang rust-analyzer 0.3.2129 linux-x64
-
-RUN echo "export PATH=\$PATH:${CARGO_HOME}/bin:${RUSTUP_HOME}" > /etc/profile.d/rust_path.sh \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    && export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}:\$PATH" \
+    && rustup default stable \
+    && rustup component add rust-src \
+    && echo "export PATH=\$PATH:${CARGO_HOME}/bin:${RUSTUP_HOME}" > /etc/profile.d/rust_path.sh \
     && echo "export CARGO_HOME=${CARGO_HOME}/bin:${RUSTUP_HOME}" >> /etc/profile.d/rust_path.sh \
     && echo "export RUSTUP_HOME=${RUSTUP_HOME}" >> /etc/profile.d/rust_path.sh
+
+# Rust 開発用の拡張機能をインストール
+RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" rust-lang rust-analyzer 0.3.2137 linux-x64
+RUN /vscode_install_extension.sh "${VSCODE_EXTENSIONS_DIR}" vadimcn vscode-lldb 1.11.0 linux-x64
 
 # ----------------------------------------------------------------------------------------------------
 
